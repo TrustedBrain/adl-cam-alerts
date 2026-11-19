@@ -2,7 +2,7 @@
  "generated": "2026-11-19T21:20+10:30",
  "today": "2026-11-19",
  "source": "SAMPLE DATA (replaced by the first real run)",
- "stale": false,
+ "stale": true,
  "days": [
   {
    "date": "2026-11-19",
@@ -114,7 +114,7 @@
  "routes": {
   "justin": {
    "name": "Justin",
-   "label": "Hove ⇄ Anzac Hwy ⇄ Greenhill Rd",
+   "label": "Hove \u21c4 Anzac Hwy \u21c4 Greenhill Rd",
    "color": "#3fa9ff",
    "coords": [
     [
@@ -153,7 +153,7 @@
   },
   "yvette": {
    "name": "Yvette",
-   "label": "Hove ⇄ Seaford",
+   "label": "Hove \u21c4 Seaford",
    "color": "#c07bff",
    "coords": [
     [
@@ -191,5 +191,7 @@
    ]
   }
  },
- "summary": {}
+ "summary": {},
+ "error": "Could not read the camera list: plain: 403 Client Error: Forbidden for url: https://speedcameras.sa.gov.au/home/mobile_camera_locations; chrome-tls: HTTP Error 403: ; browser: no dated lists found; fleurieu: nothing current",
+ "checked": "2026-11-19T22:24+10:30"
 }
