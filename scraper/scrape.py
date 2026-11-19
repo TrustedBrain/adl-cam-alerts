@@ -29,6 +29,11 @@ DEBUG = ROOT / "scraper" / "debug"
 ADL = ZoneInfo("Australia/Adelaide")
 SAPOL_URL = "https://speedcameras.sa.gov.au/home/mobile_camera_locations"
 UA = {"User-Agent": "Mozilla/5.0 (personal camera map; github.com/TrustedBrain/adl-cam-alerts)"}
+CHROME_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+             "Chrome/131.0.0.0 Safari/537.36")
+BROWSER_HEADERS = {"User-Agent": CHROME_UA, "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                   "Accept-Language": "en-AU,en;q=0.9", "Cache-Control": "no-cache"}
+FLEURIEU_HOME = "https://fleurieunews.com.au/"
 OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
             "https://maps.mail.ru/osm/tools/overpass/api/interpreter"]
 OSRM = "https://router.project-osrm.org/route/v1/driving/"
@@ -41,6 +46,7 @@ NEAR_M = 1200         # otherwise, anything this close counts as "near"
 MONTHS = "January February March April May June July August September October November December".split()
 DAYS = "Monday Tuesday Wednesday Thursday Friday Saturday Sunday".split()
 DATE_LONG = re.compile(r"^(?:(%s),?\s+)?(\d{1,2})(?:st|nd|rd|th)?\s+(%s)\s+(\d{4})$" % ("|".join(DAYS), "|".join(MONTHS)), re.I)
+DATE_MDY = re.compile(r"(%s),?\s+(%s)\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?" % ("|".join(DAYS), "|".join(MONTHS)), re.I)
 DATE_SHORT = re.compile(r"^(\d{1,2})/(\d{1,2})/(\d{4})$")
 ROAD_LINE = re.compile(r"^[A-Za-z0-9'’.\- ]{2,50},\s*[A-Za-z'’.\- ]{2,40}$")
 
@@ -78,7 +84,19 @@ def title(s):
 # ---------------------------------------------------------------- SAPOL page
 
 def fetch_html(url):
-    r = requests.get(url, headers=UA, timeout=40)
+    r = requests.get(url, headers=BROWSER_HEADERS, timeout=40)
+    r.raise_for_status()
+    return r.text
+
+
+def fetch_impersonate(url):
+    """Same request with a real Chrome TLS fingerprint (gets past some bot filters)."""
+    try:
+        from curl_cffi import requests as creq
+    except ImportError:
+        subprocess.run([sys.executable, "-m", "pip", "install", "-q", "curl_cffi"], check=True)
+        from curl_cffi import requests as creq
+    r = creq.get(url, impersonate="chrome", timeout=40, headers={"Accept-Language": "en-AU,en;q=0.9"})
     r.raise_for_status()
     return r.text
 
@@ -94,8 +112,9 @@ def fetch_rendered(url):
                    stdout=subprocess.DEVNULL)
     with sync_playwright() as p:
         b = p.chromium.launch()
-        pg = b.new_page(user_agent=UA["User-Agent"])
+        pg = b.new_page(user_agent=CHROME_UA, locale="en-AU", timezone_id="Australia/Adelaide")
         pg.goto(url, wait_until="networkidle", timeout=90000)
+        pg.wait_for_timeout(3000)
         html = pg.content()
         b.close()
     return html
@@ -158,22 +177,79 @@ def parse_sapol(html):
     return days, country_label, sorted(set(country), key=lambda x: (x[1], x[0]))
 
 
-def get_lists():
-    tried = []
-    for how in ("plain", "browser"):
+def snippet(html, n=400):
+    t = " ".join(page_lines(html))
+    return t[:n]
+
+
+def infer_date(m, today):
+    month = MONTHS.index(m.group(2).capitalize()) + 1
+    day = int(m.group(3))
+    if m.group(4):
+        return dt.date(int(m.group(4)), month, day)
+    for y in (today.year, today.year + 1, today.year - 1):
         try:
-            html = fetch_html(SAPOL_URL) if how == "plain" else fetch_rendered(SAPOL_URL)
-        except Exception as e:
-            tried.append(f"{how}: {e}")
+            d = dt.date(y, month, day)
+        except ValueError:
             continue
-        DEBUG.mkdir(parents=True, exist_ok=True)
+        if abs((d - today).days) < 200 and DAYS[d.weekday()].lower() == m.group(1).lower():
+            return d
+    return None
+
+
+def fleurieu_lists(today):
+    """Fallback: The Fleurieu App posts each day's SAPOL metro list as a news story."""
+    home = fetch_rendered(FLEURIEU_HOME)
+    soup = BeautifulSoup(home, "html.parser")
+    links = {}
+    for a in soup.find_all("a", href=True):
+        txt = " ".join(a.get_text(" ").split())
+        if "/NewsStory/" in a["href"] and "camera" in (txt + a["href"]).lower():
+            links[requests.compat.urljoin(FLEURIEU_HOME, a["href"])] = txt
+    log(f"Fleurieu: {len(links)} camera stories on the home page")
+    days = {}
+    for url, txt in list(links.items())[:8]:
+        html = fetch_html(url)
+        lines = page_lines(html)
+        head = " ".join(lines[:40])
+        m = DATE_MDY.search(txt) or DATE_MDY.search(head)
+        d = infer_date(m, today) if m else None
+        if not d or d < today - dt.timedelta(days=1) or d in days:
+            continue
+        roads = sorted({tuple(title(x) for x in [p.strip() for p in s_.split(",", 1)]) for s_ in lines if ROAD_LINE.match(s_)},
+                       key=lambda x: (x[1], x[0]))
+        if len(roads) >= 5:
+            days[d] = roads
+            log(f"  {d}: {len(roads)} roads from {url}")
+    return days
+
+
+def get_lists(today):
+    tried = []
+    DEBUG.mkdir(parents=True, exist_ok=True)
+    for how, fn in (("plain", fetch_html), ("chrome-tls", fetch_impersonate), ("browser", fetch_rendered)):
+        try:
+            html = fn(SAPOL_URL)
+        except Exception as e:
+            tried.append(f"{how}: {str(e)[:120]}")
+            log(f"SAPOL ({how}) failed: {str(e)[:200]}")
+            continue
         (DEBUG / f"sapol-{how}.html").write_text(html)
         days, clabel, country = parse_sapol(html)
         log(f"SAPOL ({how}): {len(days)} days -> {[str(d) for d in sorted(days)]}, country {len(country)}")
         if days:
-            return days, clabel, country, f"SA Police ({how})"
+            return days, clabel, country, "SA Police"
+        log(f"  page text: {snippet(html)}")
         tried.append(f"{how}: no dated lists found")
-    raise RuntimeError("Could not read SAPOL list: " + "; ".join(tried))
+    try:
+        days = fleurieu_lists(today)
+        if days:
+            return days, "", [], "The Fleurieu App (repost of the SA Police list)"
+        tried.append("fleurieu: nothing current")
+    except Exception as e:
+        tried.append(f"fleurieu: {str(e)[:120]}")
+        log(f"Fleurieu failed: {e}")
+    raise RuntimeError("Could not read the camera list: " + "; ".join(tried))
 
 
 # ---------------------------------------------------------------- OpenStreetMap
@@ -366,7 +442,7 @@ def main():
     prev = load(OUT / "data.json", {})
 
     try:
-        days, clabel, country, source = get_lists()
+        days, clabel, country, source = get_lists(today)
     except Exception as e:
         log(f"ERROR {e}")
         if prev:
