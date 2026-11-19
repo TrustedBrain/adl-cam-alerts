@@ -34,8 +34,8 @@ CHROME_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 BROWSER_HEADERS = {"User-Agent": CHROME_UA, "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                    "Accept-Language": "en-AU,en;q=0.9", "Cache-Control": "no-cache"}
 FLEURIEU_HOME = "https://fleurieunews.com.au/"
-OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
-            "https://maps.mail.ru/osm/tools/overpass/api/interpreter"]
+OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter",
+            "https://overpass.kumi.systems/api/interpreter"]
 OSRM = "https://router.project-osrm.org/route/v1/driving/"
 SA_BBOX = "(-38.1,129.0,-25.9,141.1)"
 
@@ -242,12 +242,17 @@ def file_lists(today):
 def get_lists(today):
     tried = []
     DEBUG.mkdir(parents=True, exist_ok=True)
+    refused = 0
     for how, fn in (("plain", fetch_html), ("chrome-tls", fetch_impersonate), ("browser", fetch_rendered)):
+        if how == "browser" and refused == 2:
+            tried.append("browser: skipped (site refuses this server)")
+            continue
         try:
             html = fn(SAPOL_URL)
         except Exception as e:
             tried.append(f"{how}: {str(e)[:120]}")
             log(f"SAPOL ({how}) failed: {str(e)[:200]}")
+            refused += "403" in str(e)
             continue
         (DEBUG / f"sapol-{how}.html").write_text(html)
         days, clabel, country = parse_sapol(html)
@@ -276,17 +281,17 @@ def get_lists(today):
 
 def overpass(q):
     last = None
-    for attempt in range(3):
+    for attempt in range(2):
         for url in OVERPASS:
             try:
-                r = requests.post(url, data={"data": q}, headers=UA, timeout=90)
+                r = requests.post(url, data={"data": q}, headers=UA, timeout=45)
                 if r.status_code == 200:
                     return r.json()
                 last = f"{url} {r.status_code}"
             except Exception as e:
-                last = f"{url} {e}"
-            time.sleep(2)
-        time.sleep(10 * (attempt + 1))
+                last = f"{url} {str(e)[:80]}"
+            time.sleep(1)
+        time.sleep(5)
     raise RuntimeError(f"Overpass failed: {last}")
 
 
@@ -331,29 +336,40 @@ def lines_from(res):
     return out
 
 
+def qs(s):
+    return s.replace('"', "").replace("’", "'")
+
+
 def find_road(road, suburb):
-    nf = name_filter(road)
-    sub = rx(suburb)
-    q1 = f"""[out:json][timeout:60];
-area["boundary"="administrative"]["admin_level"~"^(9|10)$"]["name"~"^{sub}$",i]->.s;
-way(area.s)[highway]{nf}{SA_BBOX};
+    """Exact-name lookups first (fast, indexed); regex only as a fallback."""
+    full, sub = qs(osm_name(road)), qs(suburb)
+    q1 = f"""[out:json][timeout:25];
+area["name"="{sub}"]["boundary"="administrative"]->.s;
+way(area.s)["highway"]["name"="{full}"]{SA_BBOX};
 out geom;"""
     lines = lines_from(overpass(q1))
     if lines:
         return lines, "suburb"
-    q2 = f"""[out:json][timeout:60];
-node["place"]["name"~"^{sub}$",i]{SA_BBOX}->.p;
-way(around.p:3000)[highway]{nf};
+    q2 = f"""[out:json][timeout:25];
+node["place"]["name"="{sub}"]{SA_BBOX}->.p;
+way(around.p:3000)["highway"]["name"="{full}"];
 out geom;"""
     lines = lines_from(overpass(q2))
-    return (lines, "near-suburb") if lines else ([], "not found")
+    if lines:
+        return lines, "near-suburb"
+    q3 = f"""[out:json][timeout:25];
+node["place"]["name"~"^{rx(suburb)}$",i]{SA_BBOX}->.p;
+way(around.p:3500)["highway"]{name_filter(road)};
+out geom;"""
+    lines = lines_from(overpass(q3))
+    return (lines, "fuzzy") if lines else ([], "not found")
 
 
 def resolve_point(pt):
     if isinstance(pt, list):
         return pt
     if "place" in pt:
-        q = f"""[out:json][timeout:30];node["place"~"suburb|town|locality|village"]["name"~"^{rx(pt['place'])}$",i]{SA_BBOX};out;"""
+        q = f"""[out:json][timeout:25];node["place"]["name"="{qs(pt['place'])}"]{SA_BBOX};out;"""
         els = overpass(q).get("elements", [])
         if not els:
             raise RuntimeError(f"place not found: {pt}")
@@ -473,7 +489,13 @@ def main():
         sys.exit(1)
 
     days = {d: v for d, v in days.items() if d >= today - dt.timedelta(days=1)}
-    routes = build_routes(load(ROOT / "scraper" / "routes.json", {}), route_cache)
+    try:
+        routes = build_routes(load(ROOT / "scraper" / "routes.json", {}), route_cache)
+    except Exception as e:
+        log(f"Route error: {e}")
+        routes = prev.get("routes") or {}
+        if not routes:
+            raise
     dense = {k: densify(r["coords"]) for k, r in routes.items()}
 
     wanted = {(r, s) for v in days.values() for r, s in v} | set(country)
