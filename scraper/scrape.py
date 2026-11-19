@@ -37,6 +37,8 @@ FLEURIEU_HOME = "https://fleurieunews.com.au/"
 OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter",
             "https://overpass.kumi.systems/api/interpreter"]
 OSRM = "https://router.project-osrm.org/route/v1/driving/"
+NOMINATIM = "https://nominatim.openstreetmap.org/search"
+_last_nom = [0.0]
 SA_BBOX = "(-38.1,129.0,-25.9,141.1)"
 
 ON_SHARED_M = 120     # route must run along the camera road for at least this far to count as "on"
@@ -281,17 +283,16 @@ def get_lists(today):
 
 def overpass(q):
     last = None
-    for attempt in range(2):
-        for url in OVERPASS:
+    for attempt in range(1):
+        for url in OVERPASS[:2]:
             try:
-                r = requests.post(url, data={"data": q}, headers=UA, timeout=45)
+                r = requests.post(url, data={"data": q}, headers=UA, timeout=30)
                 if r.status_code == 200:
                     return r.json()
                 last = f"{url} {r.status_code}"
             except Exception as e:
                 last = f"{url} {str(e)[:80]}"
             time.sleep(1)
-        time.sleep(5)
     raise RuntimeError(f"Overpass failed: {last}")
 
 
@@ -340,7 +341,53 @@ def qs(s):
     return s.replace('"', "").replace("’", "'")
 
 
+def nominatim(params):
+    wait = 1.1 - (time.time() - _last_nom[0])
+    if wait > 0:
+        time.sleep(wait)
+    _last_nom[0] = time.time()
+    p = {"format": "jsonv2", "countrycodes": "au", **params}
+    r = requests.get(NOMINATIM, params=p, headers=UA, timeout=30)
+    r.raise_for_status()
+    return r.json()
+
+
+def geo_lines(g):
+    if not g:
+        return []
+    if g["type"] == "LineString":
+        return [[[round(y, 6), round(x, 6)] for x, y in g["coordinates"]]]
+    if g["type"] == "MultiLineString":
+        return [[[round(y, 6), round(x, 6)] for x, y in ln] for ln in g["coordinates"]]
+    return []
+
+
+def nominatim_road(road, suburb):
+    full = osm_name(road)
+    res = nominatim({"street": full, "city": suburb, "state": "South Australia", "polygon_geojson": 1,
+                     "dedupe": 0, "limit": 40, "layer": "address"})
+    lines = []
+    for x in res:
+        if x.get("category", x.get("class")) != "highway":
+            continue
+        nm = (x.get("name") or "").lower()
+        if nm and nm != full.lower() and nm != road.lower():
+            continue
+        lines += geo_lines(x.get("geojson"))
+    return lines
+
+
 def find_road(road, suburb):
+    try:
+        lines = nominatim_road(road, suburb)
+        if lines:
+            return lines, "nominatim"
+    except Exception as e:
+        log(f"  nominatim error {road}, {suburb}: {str(e)[:120]}")
+    return find_road_overpass(road, suburb)
+
+
+def find_road_overpass(road, suburb):
     """Exact-name lookups first (fast, indexed); regex only as a fallback."""
     full, sub = qs(osm_name(road)), qs(suburb)
     q1 = f"""[out:json][timeout:25];
@@ -369,11 +416,10 @@ def resolve_point(pt):
     if isinstance(pt, list):
         return pt
     if "place" in pt:
-        q = f"""[out:json][timeout:25];node["place"]["name"="{qs(pt['place'])}"]{SA_BBOX};out;"""
-        els = overpass(q).get("elements", [])
-        if not els:
+        res = nominatim({"city": pt["place"], "state": "South Australia", "limit": 1})
+        if not res:
             raise RuntimeError(f"place not found: {pt}")
-        return [els[0]["lat"], els[0]["lon"]]
+        return [float(res[0]["lat"]), float(res[0]["lon"])]
     lines, _ = find_road(pt["road"], pt["suburb"])
     if not lines:
         raise RuntimeError(f"route point not found: {pt}")
@@ -512,7 +558,8 @@ def main():
             continue
         geo_cache[k] = {"lines": lines, "how": how, "t": int(time.time())}
         log(f"  {k}: {how} ({len(lines)} ways)")
-        time.sleep(1)
+        CACHE.mkdir(parents=True, exist_ok=True)
+        (CACHE / "geo.json").write_text(json.dumps(geo_cache, separators=(",", ":"), sort_keys=True))
 
     geo, summary = {}, {}
 
