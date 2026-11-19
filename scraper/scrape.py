@@ -71,7 +71,9 @@ def adl_today():
 def title(s):
     out = []
     for w in s.lower().split():
-        if w in ("of", "the"):
+        if w.upper() in ("HMAS", "RAAF", "SA", "TAFE", "UNSW"):
+            out.append(w.upper())
+        elif w in ("of", "the"):
             out.append(w)
         elif "'" in w or "’" in w:
             out.append("'".join(p.capitalize() for p in re.split("['’]", w)))

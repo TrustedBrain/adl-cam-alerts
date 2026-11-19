@@ -52,6 +52,8 @@ button { font: inherit; color: inherit; border: 0; cursor: pointer; background: 
 .card .roads { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
 .pill { font-size: 13px; padding: 5px 9px; border-radius: 9px; background: rgba(255,59,48,.16); color: #ff9a93; }
 .pill.near { background: rgba(255,255,255,.07); color: var(--muted); }
+.pill.more { color: var(--text); }
+#summary { max-height: 42vh; overflow-y: auto; }
 .clear { color: var(--green); font-size: 13.5px; margin-top: 4px; }
 .dock-row { display: flex; gap: 8px; }
 .primary { flex: 1; height: 52px; border-radius: 16px; background: var(--red); color: #fff; font-weight: 700; font-size: 16px; }

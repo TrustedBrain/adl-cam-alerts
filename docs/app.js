@@ -76,22 +76,30 @@
       const n = d.roads.filter(r => people().some(p => r.match[p] === 'on')).length;
       return `<button data-i="${i}" class="${i === dayIdx ? 'on' : ''}">${name} <small>${d.label.split(' ').slice(1, 3).join(' ')}</small>${n ? ` · ${n}` : ''}</button>`;
     }).join('');
-    $('days').querySelectorAll('button').forEach(b => b.onclick = () => { dayIdx = +b.dataset.i; render(); });
+    $('days').querySelectorAll('button').forEach(b => b.onclick = () => { dayIdx = +b.dataset.i; for (const k in openNear) delete openNear[k]; render(); });
     $('who').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.who === who));
   }
 
+  const openNear = {};
   function renderSummary() {
     $('summary').innerHTML = people().map(p => {
       const r = data.routes[p];
       const on = day().roads.filter(x => x.match[p] === 'on');
       const near = day().roads.filter(x => x.match[p] === 'near');
-      const pills = on.map(x => `<button class="pill" data-id="${x.id}">${esc(x.road)}, ${esc(x.suburb)}</button>`)
-        .concat(near.map(x => `<button class="pill near" data-id="${x.id}">${esc(x.road)}, ${esc(x.suburb)}</button>`)).join('');
+      const pill = (x, cls) => `<button class="pill ${cls}" data-id="${x.id}">${esc(x.road)}, ${esc(x.suburb)}</button>`;
+      const showNear = openNear[p] || near.length <= (on.length ? 2 : 3);
+      let body = '';
+      if (!on.length && !near.length) body = '<div class="clear">Clear ✓ nothing on or near this drive</div>';
+      else {
+        body = `<div class="roads">${on.map(x => pill(x, '')).join('')}${showNear ? near.map(x => pill(x, 'near')).join('') : ''}
+          ${!showNear ? `<button class="pill near more" data-more="${p}">+ ${near.length} nearby</button>` : ''}</div>`;
+        if (!on.length) body = '<div class="clear">Nothing on your route ✓</div>' + body;
+      }
       return `<div class="card"><h3><i class="sw" style="background:${r.color}"></i>${r.name}
-        <span class="count">${on.length} on route · ${near.length} near</span></h3>
-        ${on.length + near.length ? `<div class="roads">${pills}</div>` : '<div class="clear">Clear ✓ nothing on or near this drive</div>'}</div>`;
+        <span class="count">${on.length} on route · ${near.length} near</span></h3>${body}</div>`;
     }).join('');
     $('summary').querySelectorAll('[data-id]').forEach(b => b.onclick = () => zoomTo(b.dataset.id));
+    $('summary').querySelectorAll('[data-more]').forEach(b => b.onclick = () => { openNear[b.dataset.more] = true; renderSummary(); });
   }
 
   function zoomTo(id) {
