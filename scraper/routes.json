@@ -5,18 +5,40 @@
     "label": "Hove ⇄ Anzac Hwy ⇄ Greenhill Rd",
     "color": "#3fa9ff",
     "points": [
-      {"road": "Brighton Road", "suburb": "Hove"},
-      {"road": "Anzac Highway", "suburb": "Plympton"},
-      {"road": "Greenhill Road", "suburb": "Wayville"}
+      {
+        "road": "Brighton Road",
+        "suburb": "Hove"
+      },
+      {
+        "road": "Anzac Highway",
+        "suburb": "Plympton"
+      },
+      {
+        "road": "Greenhill Road",
+        "suburb": "Wayville"
+      }
     ]
   },
   "yvette": {
     "name": "Yvette",
-    "label": "Hove ⇄ Seaford",
+    "label": "Hove ⇄ Majors Rd ⇄ Southern Exp ⇄ Seaford",
     "color": "#c07bff",
     "points": [
-      {"road": "Brighton Road", "suburb": "Hove"},
-      {"place": "Seaford"}
+      {
+        "road": "Brighton Road",
+        "suburb": "Hove"
+      },
+      {
+        "road": "Majors Road",
+        "suburb": [
+          "O'Halloran Hill",
+          "Trott Park",
+          "Sheidow Park"
+        ]
+      },
+      {
+        "place": "Seaford"
+      }
     ]
   }
 }

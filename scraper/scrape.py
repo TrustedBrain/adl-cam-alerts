@@ -422,7 +422,11 @@ def resolve_point(pt):
         if not res:
             raise RuntimeError(f"place not found: {pt}")
         return [float(res[0]["lat"]), float(res[0]["lon"])]
-    lines, _ = find_road(pt["road"], pt["suburb"])
+    lines = []
+    for sub in ([pt["suburb"]] if isinstance(pt["suburb"], str) else pt["suburb"]):
+        lines, _ = find_road(pt["road"], sub)
+        if lines:
+            break
     if not lines:
         raise RuntimeError(f"route point not found: {pt}")
     pts = [p for ln in lines for p in ln]

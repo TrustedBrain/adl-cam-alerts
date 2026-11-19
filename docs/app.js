@@ -18,9 +18,10 @@
 
   // ---------------------------------------------------------------- map
   const map = L.map('map', { zoomControl: false, attributionControl: true }).setView([-34.95, 138.58], 11);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19, subdomains: 'abcd',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a> · Locations: SA Police'
+  // OpenStreetMap's standard tiles (no key needed), darkened with a CSS filter to suit night driving
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, className: 'dark-tiles',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · Locations: SA Police'
   }).addTo(map);
   const routeLayer = L.layerGroup().addTo(map);
   const camLayer = L.layerGroup().addTo(map);
