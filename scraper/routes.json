@@ -1,0 +1,22 @@
+{
+  "_note": "Regular drives. Each point is a road in a suburb, a suburb centre, or [lat, lon]. Edit and push; the route is recalculated on the next run.",
+  "justin": {
+    "name": "Justin",
+    "label": "Hove ⇄ Anzac Hwy ⇄ Greenhill Rd",
+    "color": "#3fa9ff",
+    "points": [
+      {"road": "Brighton Road", "suburb": "Hove"},
+      {"road": "Anzac Highway", "suburb": "Plympton"},
+      {"road": "Greenhill Road", "suburb": "Wayville"}
+    ]
+  },
+  "yvette": {
+    "name": "Yvette",
+    "label": "Hove ⇄ Seaford",
+    "color": "#c07bff",
+    "points": [
+      {"road": "Brighton Road", "suburb": "Hove"},
+      {"place": "Seaford"}
+    ]
+  }
+}

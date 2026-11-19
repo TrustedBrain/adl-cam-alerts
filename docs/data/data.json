@@ -1,0 +1,195 @@
+{
+ "generated": "2026-11-19T21:20+10:30",
+ "today": "2026-11-19",
+ "source": "SAMPLE DATA (replaced by the first real run)",
+ "stale": false,
+ "days": [
+  {
+   "date": "2026-11-19",
+   "label": "Thursday 19 November",
+   "roads": [
+    {
+     "id": "south-tce-adelaide",
+     "road": "South Tce",
+     "suburb": "Adelaide",
+     "placed": true,
+     "match": {
+      "justin": "near",
+      "yvette": null
+     }
+    },
+    {
+     "id": "peacock-rd-adelaide",
+     "road": "Peacock Rd",
+     "suburb": "Adelaide",
+     "placed": true,
+     "match": {
+      "justin": "near",
+      "yvette": null
+     }
+    },
+    {
+     "id": "cross-rd-myrtle-bank",
+     "road": "Cross Rd",
+     "suburb": "Myrtle Bank",
+     "placed": true,
+     "match": {
+      "justin": null,
+      "yvette": null
+     }
+    },
+    {
+     "id": "adelphi-tce-glenelg-north",
+     "road": "Adelphi Tce",
+     "suburb": "Glenelg North",
+     "placed": true,
+     "match": {
+      "justin": null,
+      "yvette": null
+     }
+    },
+    {
+     "id": "bonython-ave-novar-gardens",
+     "road": "Bonython Ave",
+     "suburb": "Novar Gardens",
+     "placed": true,
+     "match": {
+      "justin": "near",
+      "yvette": null
+     }
+    },
+    {
+     "id": "fenden-rd-salisbury",
+     "road": "Fenden Rd",
+     "suburb": "Salisbury",
+     "placed": false,
+     "match": {
+      "justin": null,
+      "yvette": null
+     }
+    }
+   ]
+  },
+  {
+   "date": "2026-11-20",
+   "label": "Friday 20 November",
+   "roads": [
+    {
+     "id": "southern-exp-lonsdale",
+     "road": "Southern Exp",
+     "suburb": "Lonsdale",
+     "placed": true,
+     "match": {
+      "justin": null,
+      "yvette": "on"
+     }
+    },
+    {
+     "id": "lonsdale-rd-hallett-cove",
+     "road": "Lonsdale Rd",
+     "suburb": "Hallett Cove",
+     "placed": true,
+     "match": {
+      "justin": null,
+      "yvette": "on"
+     }
+    },
+    {
+     "id": "sherriffs-rd-lonsdale",
+     "road": "Sherriffs Rd",
+     "suburb": "Lonsdale",
+     "placed": true,
+     "match": {
+      "justin": null,
+      "yvette": "near"
+     }
+    }
+   ]
+  }
+ ],
+ "country": {
+  "label": "",
+  "roads": []
+ },
+ "routes": {
+  "justin": {
+   "name": "Justin",
+   "label": "Hove ⇄ Anzac Hwy ⇄ Greenhill Rd",
+   "color": "#3fa9ff",
+   "coords": [
+    [
+     -35.007,
+     138.527
+    ],
+    [
+     -34.99,
+     138.527
+    ],
+    [
+     -34.982,
+     138.531
+    ],
+    [
+     -34.97,
+     138.545
+    ],
+    [
+     -34.958,
+     138.56
+    ],
+    [
+     -34.945,
+     138.578
+    ],
+    [
+     -34.946,
+     138.59
+    ],
+    [
+     -34.946,
+     138.6
+    ]
+   ]
+  },
+  "yvette": {
+   "name": "Yvette",
+   "label": "Hove ⇄ Seaford",
+   "color": "#c07bff",
+   "coords": [
+    [
+     -35.007,
+     138.527
+    ],
+    [
+     -35.03,
+     138.528
+    ],
+    [
+     -35.05,
+     138.53
+    ],
+    [
+     -35.075,
+     138.535
+    ],
+    [
+     -35.1,
+     138.515
+    ],
+    [
+     -35.12,
+     138.505
+    ],
+    [
+     -35.15,
+     138.495
+    ],
+    [
+     -35.19,
+     138.477
+    ]
+   ]
+  }
+ },
+ "summary": {}
+}

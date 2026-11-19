@@ -1,0 +1,69 @@
+name: Daily camera update
+
+on:
+  schedule:
+    # 4:35am and 6:35am Adelaide in daylight saving (UTC+10:30); the second also covers 5:35am in winter
+    - cron: "5 18 * * *"
+    - cron: "5 20 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore: ["docs/data/**", "scraper/cache/**"]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: daily
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r scraper/requirements.txt
+      - name: Scrape and map
+        id: scrape
+        continue-on-error: true
+        run: python scraper/scrape.py
+      - name: Save raw pages for debugging
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sapol-pages
+          path: scraper/debug/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Commit data
+        run: |
+          git config user.name "camera-bot"
+          git config user.email "camera-bot@users.noreply.github.com"
+          git add docs/data scraper/cache
+          if git diff --cached --quiet; then echo "No changes"; else
+            git commit -q -m "Camera data $(TZ=Australia/Adelaide date +%F)"
+            git pull -q --rebase && git push -q
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - name: Fail if scrape failed
+        if: steps.scrape.outcome == 'failure'
+        run: exit 1
+
+  deploy:
+    needs: update
+    if: always() && needs.update.result != 'cancelled'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

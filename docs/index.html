@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0f12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cam Alerts">
+<title>Adelaide Camera Alerts</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="map" aria-label="Map of camera roads"></div>
+
+<header class="top">
+  <div class="row">
+    <div class="brand"><span class="dot"></span><div><h1>Camera Alerts</h1><p id="sub">Loading…</p></div></div>
+    <button class="icon" id="btn-list" aria-label="Full list">
+      <svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+    </button>
+  </div>
+  <nav id="days" class="tabs" aria-label="Day"></nav>
+  <nav id="who" class="chips" aria-label="Whose drive">
+    <button data-who="all">Both</button>
+    <button data-who="justin"><i class="sw j"></i>Justin</button>
+    <button data-who="yvette"><i class="sw y"></i>Yvette</button>
+  </nav>
+</header>
+
+<div id="banner" class="banner" hidden></div>
+<div id="alert" class="alert" hidden role="alert" aria-live="assertive"><div id="alert-k">Camera road ahead</div><div id="alert-r"></div><div id="alert-m"></div></div>
+
+<section class="dock">
+  <div id="summary"></div>
+  <div class="dock-row">
+    <button id="btn-drive" class="primary">Start drive</button>
+    <button id="btn-test" class="secondary" aria-label="Test voice">🔊</button>
+  </div>
+  <div id="drive" class="drive" hidden><span id="d-speed">–</span> km/h · <span id="d-next">Watching today's roads…</span></div>
+</section>
+
+<aside id="sheet" class="sheet" hidden>
+  <div class="sheet-head"><h2 id="sheet-title">All roads</h2><button class="icon" id="btn-close" aria-label="Close">✕</button></div>
+  <div id="sheet-body"></div>
+</aside>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
