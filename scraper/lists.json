@@ -1,0 +1,214 @@
+{
+ "source": "SA Police list via app.speedcameras.com.au",
+ "saved": "2026-11-19T22:40+10:30",
+ "days": {
+  "2026-11-19": [
+   [
+    "Airport Rd",
+    "Brooklyn Park"
+   ],
+   [
+    "Elizabeth Rd",
+    "Christie Downs"
+   ],
+   [
+    "McKinna Rd",
+    "Christie Downs"
+   ],
+   [
+    "Gulfview Rd",
+    "Christies Beach"
+   ],
+   [
+    "Roy Tce",
+    "Christies Beach"
+   ],
+   [
+    "Hartley Rd",
+    "Flinders Park"
+   ],
+   [
+    "Adelphi Tce",
+    "Glenelg North"
+   ],
+   [
+    "Broadway",
+    "Glenelg South"
+   ],
+   [
+    "Lonsdale Rd",
+    "Hallett Cove"
+   ],
+   [
+    "East Tce",
+    "Henley Beach"
+   ],
+   [
+    "HMAS Australia Rd",
+    "Henley Beach South"
+   ],
+   [
+    "Sir Donald Bradman Dr",
+    "Lockleys"
+   ],
+   [
+    "Aldershot Rd",
+    "Lonsdale"
+   ],
+   [
+    "Sherriffs Rd",
+    "Lonsdale"
+   ],
+   [
+    "Southern Exp",
+    "Lonsdale"
+   ],
+   [
+    "Brodie Rd",
+    "Morphett Vale"
+   ],
+   [
+    "Elizabeth Rd",
+    "Morphett Vale"
+   ],
+   [
+    "Sherriffs Rd",
+    "Morphett Vale"
+   ],
+   [
+    "Bonython Ave",
+    "Novar Gardens"
+   ],
+   [
+    "Black Rd",
+    "O'Halloran Hill"
+   ],
+   [
+    "Southern Exp",
+    "O'Halloran Hill"
+   ],
+   [
+    "Grant Rd",
+    "Reynella"
+   ],
+   [
+    "Hillier Rd",
+    "Reynella"
+   ],
+   [
+    "Military Rd",
+    "West Beach"
+   ],
+   [
+    "West Beach Rd",
+    "West Beach"
+   ]
+  ],
+  "2026-11-20": [
+   [
+    "Peacock Rd",
+    "Adelaide"
+   ],
+   [
+    "South Tce",
+    "Adelaide"
+   ],
+   [
+    "Churchill North Rd",
+    "Cavan"
+   ],
+   [
+    "North South Motorway",
+    "Dry Creek"
+   ],
+   [
+    "Salisbury Hwy",
+    "Dry Creek"
+   ],
+   [
+    "Fisher St",
+    "Fullarton"
+   ],
+   [
+    "Wattle St",
+    "Fullarton"
+   ],
+   [
+    "Walkerville Tce",
+    "Gilberton"
+   ],
+   [
+    "Glen Osmond Rd",
+    "Glen Osmond"
+   ],
+   [
+    "Martins Rd",
+    "Green Fields"
+   ],
+   [
+    "Mount Barker Rd",
+    "Leawood Gardens"
+   ],
+   [
+    "Elder Smith Rd",
+    "Mawson Lakes"
+   ],
+   [
+    "Main North Rd",
+    "Mawson Lakes"
+   ],
+   [
+    "Port Wakefield Rd",
+    "Mawson Lakes"
+   ],
+   [
+    "Cross Rd",
+    "Myrtle Bank"
+   ],
+   [
+    "Fitzroy Tce",
+    "North Adelaide"
+   ],
+   [
+    "Lefevre Tce",
+    "North Adelaide"
+   ],
+   [
+    "Melbourne St",
+    "North Adelaide"
+   ],
+   [
+    "Robe Tce",
+    "North Adelaide"
+   ],
+   [
+    "Martins Rd",
+    "Parafield Gardens"
+   ],
+   [
+    "Whites Rd",
+    "Paralowie"
+   ],
+   [
+    "Fenden Rd",
+    "Salisbury"
+   ],
+   [
+    "Bridge Rd",
+    "Salisbury East"
+   ],
+   [
+    "Clayson Rd",
+    "Salisbury East"
+   ],
+   [
+    "Diment Rd",
+    "Salisbury North"
+   ]
+  ]
+ },
+ "country": {
+  "label": "",
+  "roads": []
+ }
+}

@@ -224,6 +224,21 @@ def fleurieu_lists(today):
     return days
 
 
+LISTS_FILE = ROOT / "scraper" / "lists.json"
+
+
+def file_lists(today):
+    """Lists saved into the repo by the daily Claude task (it can reach the list when GitHub's servers can't)."""
+    j = load(LISTS_FILE, {})
+    days = {}
+    for k, v in (j.get("days") or {}).items():
+        d = dt.date.fromisoformat(k)
+        if d >= today - dt.timedelta(days=1) and v:
+            days[d] = sorted({(title(r), title(s_)) for r, s_ in v}, key=lambda x: (x[1], x[0]))
+    country = sorted({(title(r), title(s_)) for r, s_ in (j.get("country") or {}).get("roads", [])}, key=lambda x: (x[1], x[0]))
+    return days, (j.get("country") or {}).get("label", ""), country, j.get("source", "saved list")
+
+
 def get_lists(today):
     tried = []
     DEBUG.mkdir(parents=True, exist_ok=True)
@@ -241,6 +256,11 @@ def get_lists(today):
             return days, clabel, country, "SA Police"
         log(f"  page text: {snippet(html)}")
         tried.append(f"{how}: no dated lists found")
+    days, clabel, country, src = file_lists(today)
+    if today in days:
+        log(f"Using saved lists ({src}): {[str(d) for d in sorted(days)]}")
+        return days, clabel, country, src
+    tried.append("saved lists: nothing for today")
     try:
         days = fleurieu_lists(today)
         if days:
