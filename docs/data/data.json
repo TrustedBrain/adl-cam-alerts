@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-19T23:05+10:30",
+ "generated": "2026-11-19T23:09+10:30",
  "today": "2026-11-19",
  "source": "SA Police list via app.speedcameras.com.au",
  "stale": false,
@@ -110,7 +110,7 @@
     },
     {
      "id": "hmas-australia-rd-henley-beach-south",
-     "road": "Hmas Australia Rd",
+     "road": "HMAS Australia Rd",
      "suburb": "Henley Beach South",
      "placed": true,
      "match": {
