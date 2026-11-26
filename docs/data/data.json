@@ -4211,5 +4211,5 @@
   }
  },
  "error": "Could not read the camera list: plain: 403 Client Error: Forbidden for url: https://speedcameras.sa.gov.au/home/mobile_camera_locations; chrome-tls: HTTP Error 403: ; browser: skipped (site refuses this server); saved lists: nothing for today; fleurieu: nothing current",
- "checked": "2026-11-25T14:00+10:30"
+ "checked": "2026-11-26T12:14+10:30"
 }
